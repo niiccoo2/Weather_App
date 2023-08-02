@@ -13,39 +13,55 @@ def get_weather():
     # construct the API URL
     url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}"
 
-    # send the HTTP request
-    response = requests.get(url)
+    try:
+        # send the HTTP request
+        response = requests.get(url)
+        response.raise_for_status()  # raise an exception if the HTTP request fails
 
-    #print(response.text)
+        # parse the JSON response data into a Python dictionary
+        data = json.loads(response.text)
 
-    # parse the JSON response data into a Python dictionary
-    data = json.loads(response.text)
+        # extract the relevant weather information from the dictionary
+        temperature_k = data["main"]["temp"]
+        temperature_min_k = data["main"]["temp_min"]
+        temperature_max_k = data["main"]["temp_max"]
+        humidity = data["main"]["humidity"]
+        description = data["weather"][0]["description"]
 
-    # extract the relevant weather information from the dictionary
-    temperature_k = data["main"]["temp"]
-    temperature_min_k = data["main"]["temp_min"]
-    temperature_max_k = data["main"]["temp_max"]
-    humidity = data["main"]["humidity"]
-    description = data["weather"][0]["description"]
+        if current_unit == "F":
+            temperature_f = (temperature_k * 9/5) - 459.67
+            temperature_min_f = (temperature_min_k * 9/5) - 459.67
+            temperature_max_f = (temperature_max_k * 9/5) - 459.67
 
-    if current_unit == "F":
-        temperature_f = (temperature_k * 9/5) - 459.67
-        temperature_min_f = (temperature_min_k * 9/5) - 459.67
-        temperature_max_f = (temperature_max_k * 9/5) - 459.67
+            temperature_label.config(text=f"Temperature: {temperature_f:.1f}°F")
+            high_label.config(text=f"High: {temperature_max_f:.1f}°F")
+            low_label.config(text=f"Low: {temperature_min_f:.1f}°F")
+        else:
+            temperature_c = temperature_k - 273.15
+            temperature_min_c = temperature_min_k - 273.15
+            temperature_max_c = temperature_max_k - 273.15
 
-        temperature_label.config(text=f"Temperature: {temperature_f:.1f}°F")
-        high_label.config(text=f"High: {temperature_max_f:.1f}°F")
-        low_label.config(text=f"Low: {temperature_min_f:.1f}°F")
-    else:
-        temperature_c = temperature_k - 273.15
-        temperature_min_c = temperature_min_k - 273.15
-        temperature_max_c = temperature_max_k - 273.15
+            temperature_label.config(text=f"Temperature: {temperature_c:.1f}°C")
+            high_label.config(text=f"High: {temperature_max_c:.1f}°C")
+            low_label.config(text=f"Low: {temperature_min_c:.1f}°C")
+        humidity_label.config(text=f"Humidity: {humidity}%")
+        description_label.config(text=f"Description: {description.capitalize()}")
 
-        temperature_label.config(text=f"Temperature: {temperature_c:.1f}°C")
-        high_label.config(text=f"High: {temperature_max_c:.1f}°C")
-        low_label.config(text=f"Low: {temperature_min_c:.1f}°C")
-    humidity_label.config(text=f"Humidity: {humidity}%")
-    description_label.config(text=f"Description: {description.capitalize()}")
+    except requests.exceptions.HTTPError as e:
+        # handle HTTP errors
+        temperature_label.config(text="Temperature: N/A")
+        high_label.config(text="High: N/A")
+        low_label.config(text="Low: N/A")
+        humidity_label.config(text="Humidity: N/A")
+        description_label.config(text=f"Error: {e}")
+
+    except (KeyError, json.JSONDecodeError) as e:
+        # handle JSON parsing errors
+        temperature_label.config(text="Temperature: N/A")
+        high_label.config(text="High: N/A")
+        low_label.config(text="Low: N/A")
+        humidity_label.config(text="Humidity: N/A")
+        description_label.config(text=f"Error: Invalid location or API key")
 
 def change_units():
     global current_unit
