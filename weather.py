@@ -80,8 +80,10 @@ def change_units():
 
 root = tk.Tk()
 root.title("Nico's Weather App")
+root.configure(bg='#859DEB')
 
-img = Image.open("C:/Users/Nico/Documents/Python/Weather/download.ico")
+#img = Image.open("C:/Users/Nico/Documents/Python/Weather/download.ico") # For laptop
+img = Image.open("C:/Users/nicos/Documents/Python/Weather/Weather_App/download.ico") # For PC
 icon = ImageTk.PhotoImage(img)
 root.iconphoto(True, icon)
 
